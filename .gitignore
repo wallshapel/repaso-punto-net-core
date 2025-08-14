@@ -1,0 +1,41 @@
+## Archivos de Visual Studio
+.vs/
+*.user
+*.suo
+
+## Compilación
+bin/
+obj/
+
+## Configuración temporal
+*.userprefs
+
+## Logs
+*.log
+
+## Publicación
+publish/
+out/
+
+## Archivos generados por herramientas
+Generated_Code/
+
+## Archivos de dependencia de paquetes
+packages/
+*.nupkg
+*.snupkg
+
+## Archivos de docker y cache
+docker-compose.override.yml
+**/docker-compose.override.yml
+**/Dockerfile.*
+**/docker-compose.*
+
+## Secretos locales (no subir cadenas de conexión reales)
+secrets.json
+appsettings.Development.json
+
+## Otros
+*.tmp
+*.bak
+*.swp
