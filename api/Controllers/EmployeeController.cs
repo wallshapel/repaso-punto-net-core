@@ -1,4 +1,5 @@
-﻿using api.Models;
+﻿// Controllers\EmployeeController.cs
+using api.Dtos.Employee;
 using api.Services.Employees;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,40 +10,39 @@ namespace api.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _service;
-
         public EmployeeController(IEmployeeService service) => _service = service;
 
-        // GET: api/employee
         [HttpGet]
-        public async Task<ActionResult<List<Employee>>> GetAll()
+        public async Task<ActionResult<List<EmployeeOutputDto>>> GetAll()
             => Ok(await _service.AllEmployees());
 
-        // POST: api/employee
         [HttpPost]
-        public async Task<ActionResult<Employee>> Create([FromBody] Employee employee)
+        public async Task<ActionResult<EmployeeOutputDto>> Create([FromBody] EmployeeCreateDto dto)
         {
-            var affected = await _service.AddEmployee(employee);
-            if (affected <= 0) return BadRequest();
-            // EF Core rellena la PK (IdEmployee) después de SaveChanges
-            return Created($"api/employee/{employee.IdEmployee}", employee);
+            var result = await _service.AddEmployee(dto);
+            if (result == null) return BadRequest();
+            return CreatedAtAction(nameof(GetAll), result);
         }
 
-        // PUT: api/employee/{id}
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Employee employee)
+        public async Task<IActionResult> Update(int id, [FromBody] EmployeeUpdateDto dto)
         {
-            if (id != employee.IdEmployee) return BadRequest("Id mismatch");
-            var affected = await _service.UpdateEmployee(employee);
-            if (affected <= 0) return NotFound();
+            if (id != dto.IdEmployee) return BadRequest("Id mismatch");
+            await _service.UpdateEmployee(dto);
             return NoContent();
         }
 
-        // DELETE: api/employee/{id}
+        [HttpPatch("{id:int}")]
+        public async Task<IActionResult> Patch(int id, [FromBody] EmployeePatchDto dto)
+        {
+            await _service.UpdateEmployeePartial(id, dto);
+            return NoContent();
+        }
+
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var affected = await _service.DeleteEmployee(id);
-            if (affected <= 0) return NotFound();
+            await _service.DeleteEmployee(id);
             return NoContent();
         }
     }

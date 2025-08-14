@@ -9,7 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Necesario para que el servicio sepa qué implementación le corresponde y cumplir con la inversión de dependencias.
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
+// Necesario para indicar a un repositorio que implementación le corresponde
+builder.Services.AddScoped<api.Repositories.Employee.IEmployeeRepository, api.Repositories.Employee.EmployeeRepository>();
+
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
