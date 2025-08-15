@@ -22,6 +22,7 @@ namespace api.Dtos.Employee
         [RegularExpression(@"^\d{10}$", ErrorMessage = "The cell phone number must have exactly 10 digits.")]
         public string? Cel { get; set; }
 
+        [Required(ErrorMessage = "The email is required.")]
         [StringLength(100, ErrorMessage = "The email address cannot exceed 100 characters.")]
         [EmailAddress(ErrorMessage = "The email address is not in a valid format.")]
         public string? Email { get; set; }

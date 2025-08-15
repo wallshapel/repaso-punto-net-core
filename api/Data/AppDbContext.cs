@@ -30,12 +30,17 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(10)
                 .IsUnicode(false);
             entity.Property(e => e.Email)
+                .IsRequired()
                 .HasMaxLength(100)
                 .IsUnicode(false);
+            entity.HasIndex(e => e.Email)
+                .IsUnique();
             entity.Property(e => e.LastName)
+                .IsRequired()
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.Name)
+                .IsRequired()
                 .HasMaxLength(100)
                 .IsUnicode(false);
         });

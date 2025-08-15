@@ -42,7 +42,7 @@ namespace api.Services.Employees
                 .ToListAsync();
         }
 
-        public async Task<EmployeeOutputDto?> AddEmployee(EmployeeCreateDto dto)
+        public async Task<EmployeeOutputDto> AddEmployee(EmployeeCreateDto dto)
         {
             // ← USO DEL MAPPER: DTO → Entity (crea instancia)
             var employee = _mapper.Map<EmployeeCreateDto, Employee>(dto);
@@ -52,8 +52,11 @@ namespace api.Services.Employees
             return _mapper.Map<Employee, EmployeeOutputDto>(employee);
         }
 
-        public async Task UpdateEmployee(EmployeeUpdateDto dto)
+        public async Task UpdateEmployee(int id, EmployeeUpdateDto dto)
         {
+            if (id != dto.IdEmployee)
+                throw new ArgumentException("Route id and body id do not match.");
+
             var employee = await GetEmployeeOrThrowAsync(dto.IdEmployee);
             // ← USO DEL MAPPER: sobrescribe propiedades (ignora IdEmployee)
             _mapper.MapInto(dto, employee, ignoreNulls: false, "IdEmployee");

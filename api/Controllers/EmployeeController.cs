@@ -20,15 +20,13 @@ namespace api.Controllers
         public async Task<ActionResult<EmployeeOutputDto>> Create([FromBody] EmployeeCreateDto dto)
         {
             var result = await _service.AddEmployee(dto);
-            if (result == null) return BadRequest();
             return CreatedAtAction(nameof(GetAll), result);
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] EmployeeUpdateDto dto)
         {
-            if (id != dto.IdEmployee) return BadRequest("Id mismatch");
-            await _service.UpdateEmployee(dto);
+            await _service.UpdateEmployee(id, dto);
             return NoContent();
         }
 

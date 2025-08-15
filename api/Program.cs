@@ -1,7 +1,11 @@
 // program.cs
 using api.Data;
 using api.Services.Employees;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +20,30 @@ builder.Services.AddScoped<api.Repositories.Employee.IEmployeeRepository, api.Re
 builder.Services.AddSingleton<api.Mapping.IObjectMapper, api.Mapping.ReflectionObjectMapper>();
 
 builder.Services.AddControllers();
+
+// Unifica los errores 400 de validación de los DTOs al mismo formato que el middleware
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+        {
+        var errors = context.ModelState
+            .Where(kvp => kvp.Value?.Errors.Count > 0)
+        .ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+        );
+        
+        var payload = new
+        {
+            status = "error",
+            message = "Validation failed.",
+            traceId = context.HttpContext.TraceIdentifier,
+            errors
+        };
+        
+            return new BadRequestObjectResult(payload);
+        };
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -34,6 +62,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
+
+// Manejo global de excepciones
+app.UseMiddleware<api.Middlewares.ExceptionHandlingMiddleware>();
 
 app.MapControllers();
 
