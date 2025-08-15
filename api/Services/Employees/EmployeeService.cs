@@ -1,8 +1,9 @@
 ﻿// Services\Employees\EmployeeService.cs
 using api.Dtos.Employee;
-using api.Exceptions;               // tu NotFoundException actual
+using api.Exceptions;
 using api.Models;
 using api.Repositories.Employee;
+using api.Mapping;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Employees
@@ -10,7 +11,13 @@ namespace api.Services.Employees
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _repo;
-        public EmployeeService(IEmployeeRepository repo) => _repo = repo;
+        private readonly IObjectMapper _mapper;
+
+        public EmployeeService(IEmployeeRepository repo, IObjectMapper mapper)
+        {
+            _repo = repo;
+            _mapper = mapper;
+        }
 
         // Helper centralizado
         private async Task<Employee> GetEmployeeOrThrowAsync(int id)
@@ -37,55 +44,27 @@ namespace api.Services.Employees
 
         public async Task<EmployeeOutputDto?> AddEmployee(EmployeeCreateDto dto)
         {
-            var employee = new Employee
-            {
-                Name = dto.Name,
-                LastName = dto.LastName,
-                Age = dto.Age,
-                Address = dto.Address,
-                Cel = dto.Cel,
-                Email = dto.Email
-            };
-
+            // ← USO DEL MAPPER: DTO → Entity (crea instancia)
+            var employee = _mapper.Map<EmployeeCreateDto, Employee>(dto);
             await _repo.AddAsync(employee);
             await _repo.SaveChangesAsync();
-
-            return new EmployeeOutputDto
-            {
-                Name = employee.Name,
-                LastName = employee.LastName,
-                Age = employee.Age,
-                Email = employee.Email
-            };
+            // ← USO DEL MAPPER: Entity → DTO de salida
+            return _mapper.Map<Employee, EmployeeOutputDto>(employee);
         }
 
         public async Task UpdateEmployee(EmployeeUpdateDto dto)
         {
             var employee = await GetEmployeeOrThrowAsync(dto.IdEmployee);
-
-            employee.Name = dto.Name;
-            employee.LastName = dto.LastName;
-            employee.Age = dto.Age;
-            employee.Address = dto.Address;
-            employee.Cel = dto.Cel;
-            employee.Email = dto.Email;
-
-            // Si está tracked, no hace falta Update; pero no daña:
-            // _repo.Update(employee);
+            // ← USO DEL MAPPER: sobrescribe propiedades (ignora IdEmployee)
+            _mapper.MapInto(dto, employee, ignoreNulls: false, "IdEmployee");
             await _repo.SaveChangesAsync();
         }
 
         public async Task UpdateEmployeePartial(int id, EmployeePatchDto dto)
         {
             var employee = await GetEmployeeOrThrowAsync(id);
-
-            if (dto.Name != null) employee.Name = dto.Name;
-            if (dto.LastName != null) employee.LastName = dto.LastName;
-            if (dto.Age.HasValue) employee.Age = dto.Age.Value;
-            if (dto.Address != null) employee.Address = dto.Address;
-            if (dto.Cel != null) employee.Cel = dto.Cel;
-            if (dto.Email != null) employee.Email = dto.Email;
-
+            // ← USO DEL MAPPER: aplica solo propiedades NO nulas (ideal para PATCH)
+            _mapper.MapInto(dto, employee, ignoreNulls: true, "IdEmployee");
             await _repo.SaveChangesAsync();
         }
 

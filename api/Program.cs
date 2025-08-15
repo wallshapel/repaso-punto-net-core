@@ -12,6 +12,9 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 // Necesario para indicar a un repositorio que implementación le corresponde
 builder.Services.AddScoped<api.Repositories.Employee.IEmployeeRepository, api.Repositories.Employee.EmployeeRepository>();
 
+// Mapper
+builder.Services.AddSingleton<api.Mapping.IObjectMapper, api.Mapping.ReflectionObjectMapper>();
+
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
