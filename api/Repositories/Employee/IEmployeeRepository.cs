@@ -1,5 +1,4 @@
 ﻿// Repositories\Employee\IEmployeeRepository.cs
-using api.Repositories;                      // IRepository<T>
 using EmployeeEntity = api.Models.Employee;  // ← alias para la entidad para evitar colisión con el namespace del repositorio
 
 namespace api.Repositories.Employee

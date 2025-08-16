@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace api.Mapping
+﻿namespace api.Mapping
 {
     public interface IObjectMapper
     {

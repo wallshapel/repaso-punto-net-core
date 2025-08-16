@@ -1,6 +1,4 @@
 ﻿// Repositories/IRepository.cs
-using System.Linq.Expressions;
-
 namespace api.Repositories
 {
     public interface IRepository<T> where T : class

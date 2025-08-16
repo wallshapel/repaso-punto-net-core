@@ -1,6 +1,4 @@
 ﻿// Data\AppDbContext.cs
-using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using api.Models;
 
