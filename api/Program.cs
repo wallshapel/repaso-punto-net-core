@@ -1,68 +1,58 @@
 // program.cs
 using api.Data;
-using api.Services.Employees;
-using Microsoft.AspNetCore.Mvc;
+using api.Infrastructure;
+using api.Middlewares;
+using api.Presentation.Validation;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Necesario para que el servicio sepa qué implementación le corresponde y cumplir con la inversión de dependencias.
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+// Infraestructura / Application
+builder.Services.AddApplicationServices();
 
-// Necesario para indicar a un repositorio que implementación le corresponde
-builder.Services.AddScoped<api.Repositories.Employee.IEmployeeRepository, api.Repositories.Employee.EmployeeRepository>();
-
-// Mapper
-builder.Services.AddSingleton<api.Mapping.IObjectMapper, api.Mapping.ReflectionObjectMapper>();
-
-builder.Services.AddControllers();
+// Controllers + JSON + Validación unificada
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(o =>
+    { 
+        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase; 
+        o.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;    
+    });
 
 // Unifica los errores 400 de validación de los DTOs al mismo formato que el middleware
-builder.Services.Configure<ApiBehaviorOptions>(options =>
-{
-    options.InvalidModelStateResponseFactory = context =>
-        {
-        var errors = context.ModelState
-            .Where(kvp => kvp.Value?.Errors.Count > 0)
-        .ToDictionary(
-            kvp => kvp.Key,
-            kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
-        );
-        
-        var payload = new
-        {
-            status = "error",
-            message = "Validation failed.",
-            traceId = context.HttpContext.TraceIdentifier,
-            errors
-        };
-        
-            return new BadRequestObjectResult(payload);
-        };
-});
+builder.Services.AddUnifiedValidationResponses();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// EF Core (pool + retries)
+builder.Services.AddDbContextPool<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.EnableRetryOnFailure(maxRetryCount: 3)
+    ));
+
+// Perf “rápidas”
+builder.Services.AddResponseCompression();
+builder.Services.AddResponseCaching();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// Global exceptions
+app.UseGlobalExceptionHandling();
+
+app.UseResponseCompression();
+app.UseResponseCaching();
+
 app.UseAuthorization();
 
-// Manejo global de excepciones
-app.UseMiddleware<api.Middlewares.ExceptionHandlingMiddleware>();
-
 app.MapControllers();
-
 app.Run();
