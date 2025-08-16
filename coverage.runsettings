@@ -1,0 +1,28 @@
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <!-- Reporte en OpenCover (compatible con ReportGenerator) -->
+          <Format>opencover</Format>
+
+          <!-- EXCLUSIONES POR ARCHIVO (globs). Usa /, no \ -->
+          <ExcludeByFile>
+            **/Models/**/*.cs;
+            **/DTOs/**/*.cs;
+            **/Migrations/**/*.cs;
+            **/obj/**/*
+          </ExcludeByFile>
+
+          <!-- EXCLUSIONES POR TIPO (opcionales). Si quieres, puedes mantenerlas vacías. -->
+          <!-- Ejemplos típicos de auto-generados: GlobalUsings, *_g.cs -->
+          <Exclude>
+            [*]*.GlobalUsings*;
+            [*]*.g*;
+            [*]*.Designer*;
+          </Exclude>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
