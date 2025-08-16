@@ -5,7 +5,9 @@ namespace api.Repositories
     {
         Task<T?> GetByIdAsync(int id, bool track = true);
         Task<List<T>> GetAllAsync(bool track = false);
-        IQueryable<T> Query(bool track = false);
+        Task<List<TResult>> ProjectAsync<TResult>(
+        System.Linq.Expressions.Expression<Func<T, TResult>> selector,
+        bool track = false);
         Task AddAsync(T entity);
         void Update(T entity);
         void Remove(T entity);

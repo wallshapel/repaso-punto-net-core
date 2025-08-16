@@ -30,16 +30,13 @@ namespace api.Services.Employees
 
         public async Task<List<EmployeeOutputDto>> AllEmployees()
         {
-            // Proyección directa desde el repo (sin tracking)
-            return await _repo.Query(track: false)
-                .Select(e => new EmployeeOutputDto
-                {
-                    Name = e.Name,
-                    LastName = e.LastName,
-                    Age = e.Age,
-                    Email = e.Email
-                })
-                .ToListAsync();
+            return await _repo.ProjectAsync(e => new EmployeeOutputDto
+            {
+                Name = e.Name,
+                LastName = e.LastName,
+                Age = e.Age,
+                Email = e.Email
+            }, track: false);
         }
 
         public async Task<EmployeeOutputDto> AddEmployee(EmployeeCreateDto dto)

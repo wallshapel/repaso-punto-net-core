@@ -1,7 +1,8 @@
 ﻿// Repositories\Employee\EmployeeRepository.cs
 using api.Data;
-using EmployeeEntity = api.Models.Employee;  // ← alias para la entidad
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using EmployeeEntity = api.Models.Employee;  // ← alias para la entidad
 
 namespace api.Repositories.Employee
 {
@@ -28,8 +29,11 @@ namespace api.Repositories.Employee
             return await query.ToListAsync();
         }
 
-        public IQueryable<EmployeeEntity> Query(bool track = false)
-            => track ? _set : _set.AsNoTracking();
+        public Task<List<TResult>> ProjectAsync<TResult>(Expression<Func<EmployeeEntity, TResult>> selector, bool track = false)
+        {
+            var query = track ? _set : _set.AsNoTracking();
+            return query.Select(selector).ToListAsync();
+        }
 
         public async Task AddAsync(EmployeeEntity entity) => await _set.AddAsync(entity);
 
